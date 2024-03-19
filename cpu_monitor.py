@@ -3,13 +3,14 @@ from threading import Thread
 import time
 import subprocess
 import logging
+import numpy as np
 
 class Arbiter():
     def __init__(self):
         self.__threads = []
         self.__main_run = False
         self.__running = False
-        self.__polling_speed = 60.0 # One minute default
+        self.__polling_speed = 60.0*3 # three minute default
         self.__cpu_usage = 0.0
         self.__cpu_usage_list = []
         self.__power_schemes = {}
@@ -156,28 +157,27 @@ class Arbiter():
             #         subprocess.run("powercfg -s "+self.__power_schemes['Balanced'])
             #         self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
             #         print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
-            
-            self.__cpu_usage_list = psutil.cpu_percent(percpu=True)
-            self.__cpu_usage = 0
-            for i in self.__cpu_usage_list:
-                if i > 75.0: # A single cpu is above 75%
-                    if subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")[19:56] != self.__power_schemes['High Performance']:#self.__curr_scheme:
-                        subprocess.run("powercfg -s "+self.__power_schemes['High Performance'], capture_output=True)
-                        self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
-                        print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
-                    self.__cpu_usage = i
-                    break
-                self.__cpu_usage += i
-            if self.__cpu_usage/len(self.__cpu_usage_list) >= 20.0: # Average cpu is above 20%
-                if subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")[19:56] != self.__power_schemes['Balanced']: #self.__curr_scheme:
-                    subprocess.run("powercfg -s "+self.__power_schemes['Balanced'])
-                    self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
-                    print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
-            else:
+            self.__cpu_usage_list = np.asarray(psutil.cpu_percent(percpu=True))
+            self.__cpu_usage = np.mean(self.__cpu_usage_list) # self.__cpu_usage_list.avg
+            if self.__cpu_usage < 20.0:
                 if subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")[19:56] != self.__power_schemes['Power saver']:#self.__curr_scheme:
                     subprocess.run("powercfg -s "+self.__power_schemes['Power saver']) 
                     self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
                     print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
+            elif self.__cpu_usage >= 20.0:
+                hp_switch = False
+                for i in self.__cpu_usage_list:
+                    if i >= 60.0:
+                        if subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")[19:56] != self.__power_schemes['High Performance']:#self.__curr_scheme:
+                            subprocess.run("powercfg -s "+self.__power_schemes['High Performance'], capture_output=True)
+                            self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
+                            print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
+                            hp_switch = True
+                if not hp_switch:
+                    if subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")[19:56] != self.__power_schemes['Balanced']: #self.__curr_scheme:
+                        subprocess.run("powercfg -s "+self.__power_schemes['Balanced'])
+                        self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
+                        print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
             time.sleep(self.__polling_speed)
 
 # end Arbiter
