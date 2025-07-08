@@ -4,6 +4,8 @@ import time
 import subprocess
 import logging
 import numpy as np
+import win32api
+import win32con
 
 class Arbiter():
     def __init__(self):
@@ -167,7 +169,7 @@ class Arbiter():
             elif self.__cpu_usage >= 20.0:
                 hp_switch = False
                 for i in self.__cpu_usage_list:
-                    if i >= 60.0:
+                    if i >= 50.0:
                         if subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")[19:56] != self.__power_schemes['High Performance']:#self.__curr_scheme:
                             subprocess.run("powercfg -s "+self.__power_schemes['High Performance'], capture_output=True)
                             self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
@@ -179,7 +181,6 @@ class Arbiter():
                         self.__curr_scheme = subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")#[19:56]
                         print(str(time.ctime())+' - Current scheme updated to '+str(subprocess.run("powercfg -getactivescheme", capture_output=True).stdout.decode("ascii")))
             time.sleep(self.__polling_speed)
-
 # end Arbiter
         
 if __name__ == '__main__':

@@ -1,0 +1,1 @@
+python "H:\My Drive\.vscode\cpu_monitor\start.py"
