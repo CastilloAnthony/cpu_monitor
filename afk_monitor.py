@@ -90,7 +90,7 @@ class Arbiter():
         settings = self.read_settings()
         if self.get_curr_scheme() != self.__power_schemes[settings['idle_scheme']]:
             subprocess.run("powercfg -s "+self.__power_schemes[settings['idle_scheme']]) 
-            self.__curr_scheme = self.__power_schemes[settings['idle_scheme']]
+            self.__curr_scheme = self.get_curr_scheme() #self.__power_schemes[settings['idle_scheme']]
             print(f'{time.ctime()} - Computer has been idle for {self.get_idle_duration()} seconds and is now is now considered AFK, the Power Scheme has been set to \n{self.get_curr_scheme()}')
     # end _afk
 
@@ -98,7 +98,7 @@ class Arbiter():
         settings = self.read_settings() # Balanced or High Performance
         if self.get_curr_scheme() != self.__power_schemes[settings['active_scheme']]:
             subprocess.run("powercfg -s "+self.__power_schemes[settings['active_scheme']])
-            self.__curr_scheme = self.__power_schemes[settings['active_scheme']]
+            self.__curr_scheme = self.get_curr_scheme() #self.__power_schemes[settings['active_scheme']]
             print(f'{time.ctime()} - Computer is no longer AFK, the Power Scheme has been set to \n{self.get_curr_scheme()}')
     # end _returned
 
