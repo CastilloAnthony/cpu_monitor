@@ -1,1 +1,7 @@
-{"idle_threshold": 180, "idle_scheme": "Power saver", "active_scheme": "High Performance"}
+{
+    "pollingSpeed": 60,
+    "idle_threshold": 180,
+    "idle_scheme": "Power saver",
+    "active_scheme": "Balanced",
+    "active_cpu_threshold": 25.0
+}
