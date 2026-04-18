@@ -1,4 +1,4 @@
-# afk_monitor
+# CPU & Idleness Monitor
 A simple script written in python for windows 11 (and 10) computers to monitor the cpu usage of the device and switch the power plan according to whether or not the device is idle or not. The default time till idle is 3 minute and the default idle scheme is Power saver while the default active scheme is Balanced and the high CPU utilization scheme is High Performance. The plling speed, idle time delay, idle scheme, active shceme, and utilization threshold can all be changed in the settings.json file. The polling speed and idle time are in seconds, the threshold is as a percentage, and the schemes should be either "Power saver", "Balanced", or "High Performance".
 
 First run pip -r requirements.txt to install the required packages.
